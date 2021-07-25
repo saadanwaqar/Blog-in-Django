@@ -1,0 +1,111 @@
+{% extends 'blog/base.html' %}
+{% block title %}Blog {% endblock title %}
+{% block body %}
+{% load static %}
+{% load humanize %}
+{% load getDict %}
+<div class="container">
+  <h1 class="display-2 text-center">Our Latest Blogs</h1>
+
+  <hr class="featurette-divider">
+
+  <div class="row featurette">
+    <div class="col ">
+      <h2 class="featurette-heading"> {{post.title}} <span>
+          <h4>{{post.timestamp}} by {{post.author}}</h4>
+        </span></h2> <p><span> </span></p>
+      <p class="lead">{{post.desc|safe }}</p>
+
+    </div>
+
+
+  </div>
+
+</div>
+
+<div class="container">
+  <h2>Comments({{comments.count}})</h2>
+  {% if user.is_authenticated %}
+  <form action="/blog/postcomment " method="POST">
+    {% csrf_token %}
+    <div class="form-group">
+
+      <input type="text" name="comment" id="" required class="form-control" placeholder="Enter your comment here."
+        aria-describedby="helpId">
+      <input type="text" name="postSno" hidden value="{{post.id}}" id="" class="form-control" placeholder="text"
+        aria-describedby="helpId">
+      <input type="text" hidden name="parentSno" hidden value="" id="" class="form-control" aria-describedby="helpId">
+    </div>
+    <div>
+      <input type="submit" value="submit" id="" class="form-control" placeholder="" aria-describedby="helpId">
+
+    </div>
+  </form>
+  {% else %}
+  <p>Please Login to post comments</p>
+  {% endif %}
+
+  {% for comment in comments %}
+  <div class="row">
+    <div class="col-md-1  "><img class="rounded mx-auto d-block w-100 p-2  " src="{% static 'my.png' %}" alt=""></div>
+    <div class="col-md-11 mt-2"> <b>{{comment.user.username}}</b> <span> {{ comment.timestamp|naturaltime }} </span>
+      <div>{{comment.comment}}</div>
+     
+      <div class="div reply mx-0">
+        {% if user.is_authenticated %}
+        <p>
+
+          <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse"
+            data-bs-target="#replybox{{comment.sno}}" aria-expanded="false" aria-controls="replybox{{comment.sno}}">
+            Reply
+          </button>
+        </p>
+        
+        <div class="collapse" id="replybox{{comment.sno}}">
+          <div class="card card-body my-2">
+            <form action="/blog/postcomment " method="POST">
+              {% csrf_token %}
+              <div class="form-group">
+
+                <input type="text" name="comment" id="" required class="form-control" placeholder="Enter your reply here "
+                  aria-describedby="helpId">
+                <input type="text" name="postSno" hidden value="{{post.id}}" id="" class="form-control"
+                  placeholder="text" aria-describedby="helpId">
+                <input type="text" hidden name="parentSno" hidden value="{{comment.sno}}" id="" class="form-control"
+                  placeholder="text" aria-describedby="helpId">
+
+              </div>
+              <div>
+                <input type="submit" value="submit" id="" class="form-control" placeholder="" aria-describedby="helpId">
+
+              </div>
+            </form>
+          </div>
+        </div>
+       {% else %}
+       <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse"
+            data-bs-target="#replybox{{comment.sno}}" aria-expanded="false" aria-controls="replybox{{comment.sno}}" disabled>
+           Login to Reply
+          </button>
+       {% endif %}
+        <div class="replies  my-2">
+             {% for reply in replyDict|get_Dict:comment.sno %}
+             <div class="row  ">
+              <div class="col-md-1  "><img class="rounded mx-auto d-block w-100 p-2  " src="{% static 'my.png' %}" alt=""></div>
+              <div class="col-md-11 my-2">
+                <b>{{reply.user.username}}</b> <span>{{ reply.timestamp|naturaltime }}</span>  <br>
+                {{reply.comment}}  
+              </div> 
+             </div>
+             <br>
+           
+             {% endfor %}
+         </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+</div>
+
+{% endblock body %}
